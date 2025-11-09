@@ -92,52 +92,6 @@ const DiscoverScreen = () => {
         )}
       </View>
 
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={styles.randomButton}
-          onPress={handleRandomMeal}
-        >
-          <Ionicons name="shuffle" size={20} color="#fff" />
-          <Text style={styles.randomButtonText}>Random Recipe</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={() => console.log('Open filters')}
-        >
-          <Ionicons name="filter" size={20} color="#0782F9" />
-          <Text style={styles.filterButtonText}>Filters</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Filter Pills (Placeholder) */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterPills}
-        contentContainerStyle={styles.filterPillsContent}
-      >
-        <TouchableOpacity style={styles.activePill}>
-          <Text style={styles.activePillText}>All</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.pill}>
-          <Text style={styles.pillText}>Pasta</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.pill}>
-          <Text style={styles.pillText}>Chicken</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.pill}>
-          <Text style={styles.pillText}>Seafood</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.pill}>
-          <Text style={styles.pillText}>Vegetarian</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.pill}>
-          <Text style={styles.pillText}>Dessert</Text>
-        </TouchableOpacity>
-      </ScrollView>
-
       {/* Results Count */}
       <Text style={styles.resultsCount}>{meals.length} recipes found</Text>
 
@@ -188,75 +142,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#000',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    gap: 12,
-  },
-  randomButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0782F9',
-    paddingVertical: 12,
-    borderRadius: 10,
-    gap: 8,
-  },
-  randomButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#0782F9',
-    gap: 8,
-  },
-  filterButtonText: {
-    color: '#0782F9',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  filterPills: {
-    marginBottom: 12,
-  },
-  filterPillsContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  pill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  pillText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  activePill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#0782F9',
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  activePillText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
   },
   resultsCount: {
     marginHorizontal: 16,
