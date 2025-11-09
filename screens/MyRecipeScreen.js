@@ -35,12 +35,36 @@ const MyRecipeScreen = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    // Add confirmation dialog
+    Alert.alert(
+      'Delete Recipe',
+      'Are you sure you want to delete this recipe?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await db.deleteUserRecipe(id);
+              load(); // reload the list after delete
+            } catch (e) {
+              console.error('Delete failed:', e);
+              Alert.alert('Error', 'Could not delete recipe');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleEdit = (id) => {
+    console.log('Edit pressed for recipe:', id);
     try {
-      await db.deleteUserRecipe(id);
-      load();
+      navigation.navigate('AddRecipe', { editId: id });
     } catch (e) {
-      console.error(e);
-      Alert.alert('Error', 'Could not delete recipe');
+      console.error('Navigation failed:', e);
+      Alert.alert('Error', 'Could not open edit screen');
     }
   };
 
@@ -55,7 +79,7 @@ const MyRecipeScreen = () => {
         <Text style={styles.title}>{item.name}</Text>
         <Text style={styles.meta}>{item.category} • {item.area}</Text>
         <View style={styles.row}>
-          <TouchableOpacity onPress={() => navigation.navigate('AddRecipe', { editId: item.id })} style={styles.smallButton}>
+          <TouchableOpacity onPress={() => handleEdit(item.id)} style={styles.smallButton}>
             <Text style={styles.smallButtonText}>Edit</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.smallButton, { backgroundColor: '#ff5c5c' }]}>
