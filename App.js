@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
-import HomeScreen from './screens/HomeScreen';
+import MainTabs from './screens/MainTabs';
 import RegisterScreen from './screens/RegisterScreen';
 import SplashScreen from './screens/SplashScreen';
 import { useEffect, useState } from 'react';
@@ -45,7 +45,7 @@ export default function App() {
           component={RegisterScreen}
         />
         <Stack.Screen name="Home"
-          component={HomeScreen}
+          component={MainTabs}
           options={{ headerBackVisible: false }}
         />
       </Stack.Navigator>
