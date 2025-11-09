@@ -22,6 +22,41 @@ const CATEGORIES = [
     'Vegetarian',
 ];
 
+const AREAS = [
+    'American',
+    'Australian',
+    'British',
+    'Canadian',
+    'Chinese',
+    'Croatian',
+    'Dutch',
+    'Egyptian',
+    'Filipino',
+    'French',
+    'Greek',
+    'Indian',
+    'Irish',
+    'Italian',
+    'Jamaican',
+    'Japanese',
+    'Kenyan',
+    'Malaysian',
+    'Mexican',
+    'Moroccan',
+    'Norwegian',
+    'Polish',
+    'Portuguese',
+    'Russian',
+    'Spanish',
+    'Syrian',
+    'Thai',
+    'Tunisian',
+    'Turkish',
+    'Ukrainian',
+    'Uruguayan',
+    'Vietnamese',
+];
+
 const AddRecipeScreen = ({ route }) => {
     const [name, setName] = useState('');
     const [category, setCategory] = useState('');
@@ -30,6 +65,7 @@ const AddRecipeScreen = ({ route }) => {
     const [instructions, setInstructions] = useState('');
     const [editId, setEditId] = useState(null);
     const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+    const [showAreaPicker, setShowAreaPicker] = useState(false);
     const navigation = useNavigation();
 
     // Load existing recipe if editId is provided
@@ -160,7 +196,53 @@ const AddRecipeScreen = ({ route }) => {
             </Modal>
 
             <Text style={styles.label}>Area</Text>
-            <TextInput style={styles.input} value={area} onChangeText={setArea} placeholder="Area (e.g. Italian)" />
+            <TouchableOpacity 
+                style={styles.input} 
+                onPress={() => setShowAreaPicker(true)}
+            >
+                <Text style={area ? styles.selectedText : styles.placeholderText}>
+                    {area || 'Select an area...'}
+                </Text>
+            </TouchableOpacity>
+
+            {/* Area Picker Modal */}
+            <Modal
+                visible={showAreaPicker}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowAreaPicker(false)}
+            >
+                <TouchableOpacity 
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowAreaPicker(false)}
+                >
+                    <TouchableOpacity 
+                        style={styles.pickerContainer}
+                        activeOpacity={1}
+                    >
+                        <View style={styles.pickerHeader}>
+                            <TouchableOpacity onPress={() => setShowAreaPicker(false)}>
+                                <Text style={styles.doneButton}>Done</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.pickerWrapper}>
+                            <Picker
+                                selectedValue={area}
+                                onValueChange={(itemValue) => {
+                                    setArea(itemValue);
+                                }}
+                                itemStyle={styles.pickerItem}
+                            >
+                                <Picker.Item label="Select an area..." value="" />
+                                {AREAS.map((a) => (
+                                    <Picker.Item key={a} label={a} value={a} />
+                                ))}
+                            </Picker>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
 
             <Text style={styles.label}>Ingredients (one per line)</Text>
             <TextInput
