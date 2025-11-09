@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/LoginScreen';
@@ -23,8 +23,13 @@ export default function App() {
     checkSplash();
   }, [])
 
-  if (loading) {
-    return null;
+
+  if(loading){
+    return(
+      <View style={styles.indicatorContainer}>
+        <ActivityIndicator size={40} color="#007AFF" />
+      </View>
+    );
   }
 
   return (
@@ -40,9 +45,10 @@ export default function App() {
           options={{ headerShown: false }}
           component={LoginScreen}
         />
-        <Stack.Screen
-          name="Register"
-          options={{ title: '', headerBackTitleVisible: false }}
+
+        <Stack.Screen 
+          name="Register" 
+          options={{headerShown: false}} 
           component={RegisterScreen}
         />
         <Stack.Screen name="Home"
@@ -62,4 +68,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  indicatorContainer:{
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
 });
