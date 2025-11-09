@@ -1,61 +1,63 @@
-import { StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 export default function SplashScreen() {
-  const navigator = useNavigation();  
+  const navigator = useNavigation();
   return (
     <KeyboardAvoidingView
-    style={styles.container}
-    behavior="padding"
+      style={styles.container}
+      behavior="padding"
     >
       <View style={styles.welcomeBox}>
         <Text style={styles.welcomeText}>Welcome to FoodCodex</Text>
         <Text style={{fontSize:16}}>Your personal food companion</Text>
       </View> 
 
-      <View style={styles.welcomeBox}>
-        <Text style={{color:'grey'}}>(kuva tai ikoni tähän)...</Text>
+      <View style={styles.imageBox}>
+        <Image style={styles.img} source={require("../assets/ChatGPT Image Nov 9, 2025, 06_35_57 PM.png")}/>
       </View>
 
-      <View style={styles.buttonContainer}> 
+      <View style={styles.welcomeBox}>
+        <Text style={{ color: 'grey' }}>(kuva tai ikoni tähän)...</Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
-        onPress={() => {navigator.navigate('Login'), 
-                        AsyncStorage.setItem('splashSeen', 'true');
-                    }}
-        style={styles.button}
+          onPress={() => {
+            navigator.navigate('Login'),
+              AsyncStorage.setItem('splashSeen', 'true');
+          }}
+          style={styles.button}
         >
-            <View>
+          <View>
             <Text style={styles.buttonText}>
-                Continue
+              Continue
             </Text>
-            </View>
+          </View>
         </TouchableOpacity>
-        </View> 
+      </View>
     </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-    container:{
-        flex: 1,
-        justifyContent:'center',
-        alignItems: 'center'
-    },
-
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
     welcomeBox:{
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 200
+        marginBottom: 100
     },
-
-    welcomeText:{
-      fontWeight: 'bold',
-      fontSize: 25
-    },
-
+  welcomeText: {
+    fontWeight: 'bold',
+    fontSize: 25
+  },
     button:{
       backgroundColor: '#0782F9',
       width: '100%',
@@ -75,6 +77,16 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       marginTop: 40
-    }
+    },
 
+    imageBox:{
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 50
+    },
+
+    img:{
+      width: 200,
+      height: 200
+    }
 })

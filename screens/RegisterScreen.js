@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { setDoc, doc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase'
 
 const RegisterScreen = () => {
@@ -11,6 +11,8 @@ const RegisterScreen = () => {
   const[email, setEmail] = useState('');
   const[password, setPassword] = useState('');
   const[mobile, setMobile] = useState('');
+  const[loading, setLoading] = useState(false);
+  const[isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
   const navigator = useNavigation();
 
   const handleSignUp = async() => {
@@ -39,7 +41,7 @@ const RegisterScreen = () => {
     alert("Please enter a valid phone number (use + or 00 prefix, 7–15 digits total)");
     return;
     }
-
+      setLoading(true);
       try{
         const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredentials.user;
@@ -50,7 +52,7 @@ const RegisterScreen = () => {
             mobile: mobile,
             createdAt: new Date()
         })
-
+        setIsRegistrationSuccess(true)
         console.log("User registered:", user.email);
       }catch(e){
         alert(e.message);
@@ -59,18 +61,54 @@ const RegisterScreen = () => {
         setEmail("");
         setPassword("");
         setMobile("");
+        setLoading(false)
        }
     }
 
+  if(isRegistrationSuccess){
+    return(
+      <View style={styles.imageContainer}>
+        <View style={styles.succMessage}>
+            <Image
+                style={styles.succImage}
+                source={require("../assets/vecteezy_green-check-mark-illustration-ai-generative_33126407.png")}
+            />
+            <Text style={styles.succMessageText}>
+                    Registration Successful
+            </Text>
+        </View>
+
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                onPress={() => navigator.navigate("Login")}
+                style={styles.button}
+                >
+                <View styles={styles.buttonContent}>  
+                  <Text style={styles.buttonText}>
+                      Login Now
+                  </Text>
+                </View>
+                </TouchableOpacity>
+            </View>
+        </View>
+    )
+  }  
 
   return (
     <KeyboardAvoidingView
     style={styles.container}
     behavior="padding"
     >
+        {loading &&
+        <View style={styles.loaderContainer}>
+          <Text style={styles.loaderText}>Registering</Text>
+          <ActivityIndicator size={40} color="#007AFF" />
+        </View>
+        }
+
         <View style={styles.welcomeStyle}>
             <Text style={styles.welcomeText}>Create Account</Text>
-            <Text style={{color:'grey'}}>(kuva tai ikoni tähän)...</Text>
+            <Image style={styles.titleImage} source={require("../assets/ChatGPT Image Nov 9, 2025, 06_35_57 PM.png")}/>
         </View>
 
         <View style={styles.inputContainer}>
@@ -139,10 +177,45 @@ const styles = StyleSheet.create({
       width: '80%',
     },
 
+    imageContainer:{
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    succImage:{
+      width: 300,
+      height: 300
+    },
+
+    titleImage:{
+      marginTop: 10,
+      width: 100,
+      height: 100
+    },
+
     welcomeStyle:{
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 50
+    },
+
+    succMessage:{
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 10
+    },
+
+    succMessageText:{
+        color: '#1E7D3E', // rich green tone
+        fontWeight: '700',
+        fontFamily: 'Poppins-SemiBold', // or use default font if not installed
+        textShadowColor: 'rgba(0, 0, 0, 0.15)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
+        fontSize: 20,
+        margin: 20
     },
 
     welcomeText:{
@@ -189,5 +262,25 @@ const styles = StyleSheet.create({
       color: 'white',
       fontWeight: '700',
       fontSize: 16
+    },
+
+    loaderContainer: {
+    position: 'absolute',     // makes it overlay everything
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)', // optional translucent backdrop
+    zIndex: 10,               // ensures it appears on top
+    },
+
+    loaderText: {
+      fontSize: 18,
+      fontWeight: '500',
+      color: '#007AFF',
+      marginRight: 12, // space between text and spinner
     },
 })
