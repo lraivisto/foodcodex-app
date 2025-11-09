@@ -1,16 +1,40 @@
+<<<<<<< HEAD
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
 node_modules/
 
 # Expo
+=======
+# Node dependencies
+node_modules/
+
+# Expo and build output
+>>>>>>> local
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
+<<<<<<< HEAD
 # Native
 .kotlin/
+=======
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+
+# Metro bundler cache
+.metro/
+.metro-health-check*
+
+# Native projects (auto-generated)
+ios/
+android/
+>>>>>>> local
 *.orig.*
 *.jks
 *.p8
@@ -18,6 +42,7 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+<<<<<<< HEAD
 # Metro
 .metro-health-check*
 
@@ -39,3 +64,26 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+=======
+# Debug / logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS / system
+.DS_Store
+*.pem
+
+# Kotlin / Gradle cache (optional but safe)
+.gradle/
+.kotlin/
+
+# IDE / editor
+.vscode/
+.idea/
+
+>>>>>>> local
