@@ -27,7 +27,7 @@ const FavoritesScreen = () => {
       {item.meal_thumbnail ? (
         <Image source={{ uri: item.meal_thumbnail }} style={styles.thumb} />
       ) : (
-        <View style={styles.thumbPlaceholder}><Text style={{color:'#666'}}>No Img</Text></View>
+        <View style={styles.thumbPlaceholder}><Text style={{ color: '#666' }}>No Img</Text></View>
       )}
       <View style={styles.cardBody}>
         <Text style={styles.title}>{item.meal_name}</Text>

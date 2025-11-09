@@ -23,7 +23,7 @@ export default function SplashScreen() {
         <TouchableOpacity
           onPress={() => {
             navigator.navigate('Login'),
-            AsyncStorage.setItem('splashSeen', 'true');
+              AsyncStorage.setItem('splashSeen', 'true');
           }}
           style={styles.button}
         >
