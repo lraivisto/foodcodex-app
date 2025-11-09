@@ -1,0 +1,51 @@
+# Node dependencies
+node_modules/
+
+# Expo and build output
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+
+# Metro bundler cache
+.metro/
+.metro-health-check*
+
+# Native projects (auto-generated)
+ios/
+android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Debug / logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS / system
+.DS_Store
+*.pem
+
+# Kotlin / Gradle cache (optional but safe)
+.gradle/
+.kotlin/
+
+# IDE / editor
+.vscode/
+.idea/
+
