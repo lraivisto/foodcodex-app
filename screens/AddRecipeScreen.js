@@ -46,6 +46,7 @@ const AddRecipeScreen = ({ route }) => {
         const user = auth.currentUser;
         if (!user) {
             Alert.alert('Not signed in', 'Please sign in to save recipes.');
+            console.log('[RECIPE] Save attempt failed: User not signed in');
             return;
         }
 
@@ -73,8 +74,10 @@ const AddRecipeScreen = ({ route }) => {
 
             if (editId) {
                 await db.updateUserRecipe(editId, recipeData);
+                console.log(`[RECIPE] Recipe updated successfully: ${name} (ID: ${editId})`);
             } else {
-                await db.addUserRecipe(user.uid, recipeData);
+                const newId = await db.addUserRecipe(user.uid, recipeData);
+                console.log(`[RECIPE] New recipe added successfully: ${name} (ID: ${newId})`);
             }
             navigation.goBack();
         } catch (e) {

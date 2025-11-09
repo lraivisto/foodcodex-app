@@ -19,7 +19,7 @@ const LoginScreen = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Logged in:", user.email);
+      console.log("[AUTH] User logged in successfully:", user.email);
 
       navigator.replace('Home'); // 👈 go to Home after successful login
     } catch (e) {

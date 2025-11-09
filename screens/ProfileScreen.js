@@ -10,13 +10,15 @@ export default function ProfileScreen() {
 
     const handleLogout = async () => {
         try {
+            const userEmail = auth.currentUser?.email;
             await signOut(auth);
+            console.log(`[AUTH] User logged out successfully: ${userEmail}`);
             navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
             });
         } catch (error) {
-            console.error('Error logging out:', error);
+            console.error('[AUTH] Error logging out:', error);
         }
     };
 

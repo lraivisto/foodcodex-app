@@ -46,10 +46,12 @@ const MyRecipeScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              const recipeToDelete = recipes.find(r => r.id === id);
               await db.deleteUserRecipe(id);
+              console.log(`[RECIPE] Recipe deleted successfully: ${recipeToDelete?.name || 'Unknown'} (ID: ${id})`);
               load(); // reload the list after delete
             } catch (e) {
-              console.error('Delete failed:', e);
+              console.error('[RECIPE] Delete failed:', e);
               Alert.alert('Error', 'Could not delete recipe');
             }
           }
