@@ -1,8 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Modal, Platform } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import db from '../utils/db';
 import { auth } from '../firebase';
 import { useNavigation } from '@react-navigation/native';
+
+const CATEGORIES = [
+    'Beef',
+    'Breakfast',
+    'Chicken',
+    'Dessert',
+    'Goat',
+    'Lamb',
+    'Miscellaneous',
+    'Pasta',
+    'Pork',
+    'Seafood',
+    'Side',
+    'Starter',
+    'Vegan',
+    'Vegetarian',
+];
 
 const AddRecipeScreen = ({ route }) => {
     const [name, setName] = useState('');
@@ -11,6 +29,7 @@ const AddRecipeScreen = ({ route }) => {
     const [ingredientsText, setIngredientsText] = useState('');
     const [instructions, setInstructions] = useState('');
     const [editId, setEditId] = useState(null);
+    const [showCategoryPicker, setShowCategoryPicker] = useState(false);
     const navigation = useNavigation();
 
     // Load existing recipe if editId is provided
@@ -92,7 +111,53 @@ const AddRecipeScreen = ({ route }) => {
             <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Recipe name" />
 
             <Text style={styles.label}>Category</Text>
-            <TextInput style={styles.input} value={category} onChangeText={setCategory} placeholder="Category (e.g. Pasta)" />
+            <TouchableOpacity 
+                style={styles.input} 
+                onPress={() => setShowCategoryPicker(true)}
+            >
+                <Text style={category ? styles.selectedText : styles.placeholderText}>
+                    {category || 'Select a category...'}
+                </Text>
+            </TouchableOpacity>
+
+            {/* Category Picker Modal */}
+            <Modal
+                visible={showCategoryPicker}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowCategoryPicker(false)}
+            >
+                <TouchableOpacity 
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowCategoryPicker(false)}
+                >
+                    <TouchableOpacity 
+                        style={styles.pickerContainer}
+                        activeOpacity={1}
+                    >
+                        <View style={styles.pickerHeader}>
+                            <TouchableOpacity onPress={() => setShowCategoryPicker(false)}>
+                                <Text style={styles.doneButton}>Done</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.pickerWrapper}>
+                            <Picker
+                                selectedValue={category}
+                                onValueChange={(itemValue) => {
+                                    setCategory(itemValue);
+                                }}
+                                itemStyle={styles.pickerItem}
+                            >
+                                <Picker.Item label="Select a category..." value="" />
+                                {CATEGORIES.map((cat) => (
+                                    <Picker.Item key={cat} label={cat} value={cat} />
+                                ))}
+                            </Picker>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
 
             <Text style={styles.label}>Area</Text>
             <TextInput style={styles.input} value={area} onChangeText={setArea} placeholder="Area (e.g. Italian)" />
@@ -135,6 +200,45 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         backgroundColor: '#fff',
+        minHeight: 40,
+        justifyContent: 'center',
+    },
+    placeholderText: {
+        color: '#999',
+    },
+    selectedText: {
+        color: '#000',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    pickerContainer: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    },
+    pickerHeader: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    doneButton: {
+        color: '#0782F9',
+        fontSize: 18,
+        fontWeight: '600',
+    },
+    pickerWrapper: {
+        height: 200,
+        overflow: 'hidden',
+    },
+    pickerItem: {
+        height: 150,
+        color: '#000',
     },
     button: {
         marginTop: 20,
