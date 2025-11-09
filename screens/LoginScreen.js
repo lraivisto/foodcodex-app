@@ -11,20 +11,20 @@ const LoginScreen = () => {
   const navigator = useNavigation();
 
 
-  const handleLogin = async () =>{
+  const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-    alert("All fields must be filled!");
-    return;
-  }
-    try{
-     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-     const user = userCredential.user;
-     console.log("Logged in:", user.email);
-    
-    navigator.replace('Home'); // 👈 go to Home after successful login
-    }catch(e){
+      alert("All fields must be filled!");
+      return;
+    }
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log("Logged in:", user.email);
+
+      navigator.replace('Home'); // 👈 go to Home after successful login
+    } catch (e) {
       alert(e.message)
-    }finally{
+    } finally {
       setEmail("");
       setPassword("");
     }
@@ -34,8 +34,8 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView
-    style={styles.container}
-    behavior="padding"
+      style={styles.container}
+      behavior="padding"
     >
       <View style={styles.welcomeStyle}>
         <Text style={styles.welcomeText}>Hello,</Text>
@@ -45,37 +45,37 @@ const LoginScreen = () => {
       <View style={styles.inputContainer}>
 
         <TextInput
-        placeholder='Email'
-        value={email}
-        onChangeText={text => setEmail(text)}
-        style={styles.input}
+          placeholder='Email'
+          value={email}
+          onChangeText={text => setEmail(text)}
+          style={styles.input}
         />
 
         <TextInput
-        placeholder='Password'
-        value={password}
-        onChangeText={text => setPassword(text)}
-        style={styles.input}
-        secureTextEntry
+          placeholder='Password'
+          value={password}
+          onChangeText={text => setPassword(text)}
+          style={styles.input}
+          secureTextEntry
         />
 
-      </View> 
+      </View>
 
       <View style={styles.buttonContainer}>
 
         <TouchableOpacity
-        onPress={handleLogin}
-        style={styles.button}
+          onPress={handleLogin}
+          style={styles.button}
         >
-            <View style={styles.buttonContent}>
-              <Text style={styles.buttonText}>
-                  Sign in {' '}
-              </Text>
-              <Ionicons name="arrow-forward" size={20} color="black" style={styles.icon} />
-            </View>
+          <View style={styles.buttonContent}>
+            <Text style={styles.buttonText}>
+              Sign in {' '}
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color="black" style={styles.icon} />
+          </View>
         </TouchableOpacity>
 
-        <Text onPress={() => 
+        <Text onPress={() =>
           navigator.navigate('Register')
         }>
           Don't have an account? Create
@@ -90,68 +90,68 @@ const LoginScreen = () => {
 export default LoginScreen
 
 const styles = StyleSheet.create({
-    container:{
-        flex: 1,
-        justifyContent:'center',
-        alignItems: 'center'
-    },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
 
-    inputContainer:{
-      width: '80%'
-    },
+  inputContainer: {
+    width: '80%'
+  },
 
-    welcomeStyle:{
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 50
-    },
+  welcomeStyle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 50
+  },
 
-    welcomeText:{
-      fontWeight: 'bold',
-      fontSize: 25
-    },
+  welcomeText: {
+    fontWeight: 'bold',
+    fontSize: 25
+  },
 
-    input:{
-      backgroundColor:'white',
-      paddingHorizontal: 15,
-      paddingVertical: 10,
-      borderRadius: 24,
-      marginTop: 10,
-    },
+  input: {
+    backgroundColor: 'white',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 24,
+    marginTop: 10,
+  },
 
-    buttonContainer:{
-      width: '60%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 40
-    },
+  buttonContainer: {
+    width: '60%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40
+  },
 
-    icon: {
-        color: 'white',
-        marginTop: 3,
-    },
+  icon: {
+    color: 'white',
+    marginTop: 3,
+  },
 
-    buttonContent: {  
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    },
+  },
 
-    button:{
-      backgroundColor: '#0782F9',
-      width: '100%',
-      padding: 12,
-      borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 10
-    },
+  button: {
+    backgroundColor: '#0782F9',
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
 
-    buttonText:{
-      color: 'white',
-      fontWeight: '700',
-      fontSize: 16
-    },
+  buttonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16
+  },
 
 
 })

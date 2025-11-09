@@ -20,12 +20,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-<<<<<<< HEAD
-      "edgeToEdgeEnabled": true
-=======
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.foodcodex"
->>>>>>> local
     },
     "web": {
       "favicon": "./assets/favicon.png"

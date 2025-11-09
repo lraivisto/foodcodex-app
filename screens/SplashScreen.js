@@ -4,77 +4,78 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 export default function SplashScreen() {
-  const navigator = useNavigation();  
+  const navigator = useNavigation();
   return (
     <KeyboardAvoidingView
-    style={styles.container}
-    behavior="padding"
+      style={styles.container}
+      behavior="padding"
     >
       <View style={styles.welcomeBox}>
         <Text style={styles.welcomeText}>Welcome to FoodCodex</Text>
-        <Text style={{fontSize:16}}>Your personal food companion</Text>
-      </View> 
-
-      <View style={styles.welcomeBox}>
-        <Text style={{color:'grey'}}>(kuva tai ikoni tähän)...</Text>
+        <Text style={{ fontSize: 16 }}>Your personal food companion</Text>
       </View>
 
-      <View style={styles.buttonContainer}> 
+      <View style={styles.welcomeBox}>
+        <Text style={{ color: 'grey' }}>(kuva tai ikoni tähän)...</Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
-        onPress={() => {navigator.navigate('Login'), 
-                        AsyncStorage.setItem('splashSeen', 'true');
-                    }}
-        style={styles.button}
+          onPress={() => {
+            navigator.navigate('Login'),
+            AsyncStorage.setItem('splashSeen', 'true');
+          }}
+          style={styles.button}
         >
-            <View>
+          <View>
             <Text style={styles.buttonText}>
-                Continue
+              Continue
             </Text>
-            </View>
+          </View>
         </TouchableOpacity>
-        </View> 
+      </View>
     </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-    container:{
-        flex: 1,
-        justifyContent:'center',
-        alignItems: 'center'
-    },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
 
-    welcomeBox:{
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 200
-    },
+  welcomeBox: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 200
+  },
 
-    welcomeText:{
-      fontWeight: 'bold',
-      fontSize: 25
-    },
+  welcomeText: {
+    fontWeight: 'bold',
+    fontSize: 25
+  },
 
-    button:{
-      backgroundColor: '#0782F9',
-      width: '100%',
-      padding: 12,
-      borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 10
-    },
-    buttonText:{
-      color: 'white',
-      fontWeight: '700',
-      fontSize: 16
-    },
-    buttonContainer:{
-      width: '60%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 40
-    }
+  button: {
+    backgroundColor: '#0782F9',
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16
+  },
+  buttonContainer: {
+    width: '60%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40
+  }
 
 })

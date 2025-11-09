@@ -1,25 +1,12 @@
-<<<<<<< HEAD
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
-node_modules/
-
-# Expo
-=======
 # Node dependencies
 node_modules/
 
 # Expo and build output
->>>>>>> local
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
-<<<<<<< HEAD
-# Native
-.kotlin/
-=======
 # Environment files
 .env
 .env.local
@@ -34,7 +21,6 @@ expo-env.d.ts
 # Native projects (auto-generated)
 ios/
 android/
->>>>>>> local
 *.orig.*
 *.jks
 *.p8
@@ -42,29 +28,6 @@ android/
 *.key
 *.mobileprovision
 
-<<<<<<< HEAD
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-# generated native folders
-/ios
-/android
-=======
 # Debug / logs
 npm-debug.*
 yarn-debug.*
@@ -86,4 +49,3 @@ yarn-error.*
 .vscode/
 .idea/
 
->>>>>>> local
