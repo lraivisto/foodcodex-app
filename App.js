@@ -7,6 +7,7 @@ import MainTabs from './screens/MainTabs';
 import RegisterScreen from './screens/RegisterScreen';
 import SplashScreen from './screens/SplashScreen';
 import AddRecipeScreen from './screens/AddRecipeScreen';
+import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -56,6 +57,7 @@ export default function App() {
           options={{ headerBackVisible: false }}
         />
         <Stack.Screen name="AddRecipe" options={{ title: 'Add / Edit Recipe' }} component={AddRecipeScreen} />
+        <Stack.Screen name="RecipeDetail" options={{ title: 'Recipe Details' }} component={RecipeDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

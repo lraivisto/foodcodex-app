@@ -78,7 +78,7 @@ async function getUserRecipes(userId) {
   const raw = await AsyncStorage.getItem(key);
   const arr = raw ? JSON.parse(raw) : [];
   // ensure ingredients is array
-  return arr.sort((a,b) => b.id - a.id).map(r => ({ ...r, ingredients: r.ingredients || [] }));
+  return arr.sort((a, b) => b.id - a.id).map(r => ({ ...r, ingredients: r.ingredients || [] }));
 }
 
 async function addUserRecipe(userId, recipe) {
@@ -159,7 +159,7 @@ async function getFavorites(userId) {
   const key = AS_KEYS.FAVORITES(userId);
   const raw = await AsyncStorage.getItem(key);
   const arr = raw ? JSON.parse(raw) : [];
-  return arr.sort((a,b)=>b.id - a.id);
+  return arr.sort((a, b) => b.id - a.id);
 }
 
 async function addFavorite(userId, meal) {
