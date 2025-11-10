@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image,
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { searchMealsByName, getRandomMeal, filterByCategory, filterByArea } from '../utils/api';
-import db from '../utils/db';
-import { auth } from '../firebase';
+import dbLocal from '../utils/db';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const CATEGORIES = [
   'Beef', 'Chicken', 'Dessert', 'Lamb', 'Pasta', 'Pork', 'Seafood', 'Vegetarian', 'Vegan', 'Breakfast', 'Starter', 'Side'
@@ -22,6 +23,23 @@ const DiscoverScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
   const [filterMode, setFilterMode] = useState('category'); // 'category' or 'area'
+  const [username, setUsername] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          setUsername(snap.data().username || '');
+        }
+      } catch (e) {
+        console.log('Error loading user:', e);
+      }
+    };
+    loadUser();
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -50,7 +68,7 @@ const DiscoverScreen = () => {
       // Increment random meals stat
       const user = auth.currentUser;
       if (user) {
-        await db.incrementStat(user.uid, 'random_meals_searched');
+        await dbLocal.incrementStat(user.uid, 'random_meals_searched');
       }
     }
     setLoading(false);
@@ -119,8 +137,22 @@ const DiscoverScreen = () => {
   );
 
   return (
+
     <View style={styles.container}>
+
       {/* Header */}
+      <View style={styles.userHeader}>
+        <View style={styles.userHeaderRow}>
+          <Image
+            source={require('../assets/149071.png')}
+            style={styles.userHeaderImage}
+          />
+          <Text style={styles.userHeaderText}>
+            Hello{username ? `, ${username}` : ''} 👋
+          </Text>
+        </View>
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.title}>Discover Recipes</Text>
       </View>
@@ -506,5 +538,25 @@ const styles = StyleSheet.create({
   mealCategory: {
     fontSize: 14,
     color: '#666',
+  },
+  userHeader: {
+    paddingTop: 50,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+  },
+  userHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userHeaderImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  userHeaderText: {
+    fontSize: 20,
+    fontWeight: '600',
   },
 });
