@@ -7,7 +7,6 @@ import MainTabs from './screens/MainTabs';
 import RegisterScreen from './screens/RegisterScreen';
 import SplashScreen from './screens/SplashScreen';
 import AddRecipeScreen from './screens/AddRecipeScreen';
-import RecipeDetailScreen from './screens/RecipeDetailScreen';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -25,8 +24,8 @@ export default function App() {
   }, [])
 
 
-  if (loading) {
-    return (
+  if(loading){
+    return(
       <View style={styles.indicatorContainer}>
         <ActivityIndicator size={40} color="#007AFF" />
       </View>
@@ -47,18 +46,16 @@ export default function App() {
           component={LoginScreen}
         />
 
-        <Stack.Screen
-          name="Register"
-          options={{ headerShown: false }}
+        <Stack.Screen 
+          name="Register" 
+          options={{headerShown: false}} 
           component={RegisterScreen}
         />
-        <Stack.Screen
-          name="Home"
+        <Stack.Screen name="Home"
           component={MainTabs}
-          options={{ headerShown: false }}
+          options={{ headerBackVisible: false }}
         />
         <Stack.Screen name="AddRecipe" options={{ title: 'Add / Edit Recipe' }} component={AddRecipeScreen} />
-        <Stack.Screen name="RecipeDetail" options={{ title: 'Recipe Details' }} component={RecipeDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -71,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  indicatorContainer: {
+  indicatorContainer:{
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center'
