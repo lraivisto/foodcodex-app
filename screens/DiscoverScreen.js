@@ -67,9 +67,7 @@ const DiscoverScreen = () => {
 
       // Increment random meals stat
       const user = auth.currentUser;
-      if (user) {
-        await dbLocal.incrementStat(user.uid, 'random_meals_searched');
-      }
+      // Removed call to dbLocal.incrementStat as it does not exist.
     }
     setLoading(false);
   };
