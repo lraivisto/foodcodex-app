@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getMealById, parseIngredients } from '../utils/api';
 import { auth } from '../firebase';
@@ -14,7 +14,22 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         loadMealDetails();
+        checkIfFavorite();
     }, [mealId]);
+
+    const checkIfFavorite = async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        try {
+            await db.initDB();
+            const favorites = await db.getFavorites(user.uid);
+            const isFav = favorites.some(fav => fav.meal_id === mealId);
+            setIsFavorite(isFav);
+        } catch (error) {
+            console.error('Error checking favorites:', error);
+        }
+    };
 
     const loadMealDetails = async () => {
         setLoading(true);
@@ -33,7 +48,6 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                 // Convert ingredients back to meal format if needed
                 ...(userRecipeData.ingredients ? { parsedIngredients: userRecipeData.ingredients } : {})
             });
-            setIsFavorite(true); // Already in favorites
             setLoading(false);
         } else {
             // Fetch from API for regular meals
@@ -44,26 +58,68 @@ const RecipeDetailScreen = ({ route, navigation }) => {
         }
     };
 
-    const handleAddToFavorites = async () => {
+    const handleToggleFavorite = async () => {
         const user = auth.currentUser;
         if (!user) {
-            alert('Please sign in to add favorites');
+            Alert.alert('Sign In Required', 'Please sign in to manage favorites');
             return;
         }
 
         if (!meal) return;
 
-        const success = await db.addFavorite(user.uid, {
-            meal_id: meal.idMeal,
-            meal_name: meal.strMeal,
-            meal_thumbnail: meal.strMealThumb,
-        });
-
-        if (success) {
-            setIsFavorite(true);
-            alert('Added to favorites!');
+        if (isFavorite) {
+            // Show confirmation dialog before removing
+            Alert.alert(
+                'Remove from Favorites',
+                `Are you sure you want to remove "${meal.strMeal}" from your favorites?`,
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Remove',
+                        style: 'destructive',
+                        onPress: async () => {
+                            try {
+                                const success = await db.removeFavorite(user.uid, meal.idMeal);
+                                
+                                if (success) {
+                                    setIsFavorite(false);
+                                    Alert.alert('Success', 'Removed from favorites!');
+                                } else {
+                                    Alert.alert('Error', 'Failed to remove from favorites');
+                                }
+                            } catch (error) {
+                                console.error('Error removing favorite:', error);
+                                Alert.alert('Error', 'Failed to remove from favorites');
+                            }
+                        }
+                    }
+                ]
+            );
         } else {
-            alert('Failed to add to favorites');
+            // Add to favorites (no confirmation needed)
+            try {
+                console.log('Adding to favorites:', meal.idMeal);
+                const success = await db.addFavorite(user.uid, {
+                    meal_id: meal.idMeal,
+                    meal_name: meal.strMeal,
+                    meal_thumbnail: meal.strMealThumb,
+                    category: meal.strCategory,
+                    area: meal.strArea,
+                    instructions: meal.strInstructions,
+                    ingredients: meal.parsedIngredients || parseIngredients(meal),
+                });
+                console.log('Add result:', success);
+
+                if (success) {
+                    setIsFavorite(true);
+                    Alert.alert('Success', 'Added to favorites!');
+                } else {
+                    Alert.alert('Error', 'Failed to add to favorites');
+                }
+            } catch (error) {
+                console.error('Error adding favorite:', error);
+                Alert.alert('Error', 'Failed to add to favorites');
+            }
         }
     };
 
@@ -126,11 +182,10 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                     )}
                 </View>
 
-                {/* Add to Favorites Button */}
+                {/* Add/Remove Favorites Button */}
                 <TouchableOpacity
                     style={[styles.favoriteButton, isFavorite && styles.favoriteButtonActive]}
-                    onPress={handleAddToFavorites}
-                    disabled={isFavorite}
+                    onPress={handleToggleFavorite}
                 >
                     <Ionicons
                         name={isFavorite ? "heart" : "heart-outline"}
@@ -138,7 +193,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                         color={isFavorite ? "#fff" : "#0782F9"}
                     />
                     <Text style={[styles.favoriteButtonText, isFavorite && styles.favoriteButtonTextActive]}>
-                        {isFavorite ? 'Added to Favorites' : 'Add to Favorites'}
+                        {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
                     </Text>
                 </TouchableOpacity>
 
@@ -251,8 +306,8 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     favoriteButtonActive: {
-        backgroundColor: '#0782F9',
-        borderColor: '#0782F9',
+        backgroundColor: '#FF6B6B',
+        borderColor: '#FF6B6B',
     },
     favoriteButtonText: {
         marginLeft: 8,

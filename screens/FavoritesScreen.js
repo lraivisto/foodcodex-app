@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import db from '../utils/db';
@@ -28,17 +28,36 @@ const FavoritesScreen = () => {
     }, [])
   );
 
-  const handleRemoveFavorite = async (mealId) => {
+  const handleRemoveFavorite = async (mealId, mealName) => {
     const user = auth.currentUser;
     if (!user) return;
     
-    try {
-      await db.removeFavorite(user.uid, mealId);
-      // Reload favorites after removing
-      load();
-    } catch (e) {
-      console.error('Error removing favorite:', e);
-    }
+    // Show confirmation dialog
+    Alert.alert(
+      'Remove from Favorites',
+      `Are you sure you want to remove "${mealName}" from your favorites?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const success = await db.removeFavorite(user.uid, mealId);
+              if (success) {
+                // Reload favorites after removing
+                load();
+              } else {
+                Alert.alert('Error', 'Failed to remove from favorites');
+              }
+            } catch (e) {
+              console.error('Error removing favorite:', e);
+              Alert.alert('Error', 'Failed to remove from favorites');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const renderItem = ({ item }) => {
@@ -73,7 +92,7 @@ const FavoritesScreen = () => {
           style={styles.removeButton}
           onPress={(e) => {
             e.stopPropagation();
-            handleRemoveFavorite(item.meal_id);
+            handleRemoveFavorite(item.meal_id, item.meal_name);
           }}
         >
           <Ionicons name="heart" size={24} color="#FF0000" />

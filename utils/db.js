@@ -233,15 +233,21 @@ async function addFavorite(userId, meal) {
 }
 
 async function removeFavorite(userId, mealId) {
-  if (sqliteAvailable) {
-    await executeSqlAsync('DELETE FROM favorites WHERE user_id = ? AND meal_id = ?;', [userId, mealId]);
-    return;
+  try {
+    if (sqliteAvailable) {
+      await executeSqlAsync('DELETE FROM favorites WHERE user_id = ? AND meal_id = ?;', [userId, mealId]);
+      return true;
+    }
+    const key = AS_KEYS.FAVORITES(userId);
+    const raw = await AsyncStorage.getItem(key);
+    const arr = raw ? JSON.parse(raw) : [];
+    const newArr = arr.filter(f => f.meal_id !== mealId);
+    await AsyncStorage.setItem(key, JSON.stringify(newArr));
+    return true;
+  } catch (e) {
+    console.error('Error removing favorite:', e);
+    return false;
   }
-  const key = AS_KEYS.FAVORITES(userId);
-  const raw = await AsyncStorage.getItem(key);
-  const arr = raw ? JSON.parse(raw) : [];
-  const newArr = arr.filter(f => f.meal_id !== mealId);
-  await AsyncStorage.setItem(key, JSON.stringify(newArr));
 }
 
 export default {
