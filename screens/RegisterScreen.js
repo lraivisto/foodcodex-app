@@ -171,7 +171,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: '#fff'
   },
   inputContainer: {
     width: '80%',
@@ -229,6 +230,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 24,
     marginTop: 10,
+    backgroundColor: '#f5f5f5'
   },
   buttonContainer: {
     width: '60%',
