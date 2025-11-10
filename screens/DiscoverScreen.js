@@ -1,62 +1,129 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, FlatList, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { searchMealsByName, getRandomMeal, filterByCategory, filterByArea } from '../utils/api';
+import dbLocal from '../utils/db';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-// placeholder data. will be replaced with real api data later
-const PLACEHOLDER_MEALS = [
-  {
-    idMeal: '1',
-    strMeal: 'Spaghetti Carbonara',
-    strMealThumb: 'https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg',
-    strCategory: 'Pasta',
-  },
-  {
-    idMeal: '2',
-    strMeal: 'Chicken Teriyaki',
-    strMealThumb: 'https://www.themealdb.com/images/media/meals/1550441882.jpg',
-    strCategory: 'Chicken',
-  },
-  {
-    idMeal: '3',
-    strMeal: 'Beef Wellington',
-    strMealThumb: 'https://www.themealdb.com/images/media/meals/vwuprt1511813703.jpg',
-    strCategory: 'Beef',
-  },
+const CATEGORIES = [
+  'Beef', 'Chicken', 'Dessert', 'Lamb', 'Pasta', 'Pork', 'Seafood', 'Vegetarian', 'Vegan', 'Breakfast', 'Starter', 'Side'
+];
+
+const AREAS = [
+  'American', 'British', 'Canadian', 'Chinese', 'French', 'Greek', 'Indian', 'Italian', 'Japanese', 'Mexican', 'Spanish', 'Thai'
 ];
 
 const DiscoverScreen = () => {
+  const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedArea, setSelectedArea] = useState('All');
-  const [meals, setMeals] = useState(PLACEHOLDER_MEALS);
+  const [meals, setMeals] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [filterMode, setFilterMode] = useState('category'); // 'category' or 'area'
+  const [username, setUsername] = useState(null);
 
-  const handleSearch = () => {
-    console.log('Searching for:', searchQuery);
-    // todo: API integration = search by name
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          setUsername(snap.data().username || '');
+        }
+      } catch (e) {
+        console.log('Error loading user:', e);
+      }
+    };
+    loadUser();
+  }, []);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    // clear filters when searching
+    setSelectedCategory(null);
+    setSelectedArea(null);
+
+    setLoading(true);
+    const results = await searchMealsByName(searchQuery);
+    setMeals(results);
+    setLoading(false);
   };
 
-  const handleRandomMeal = () => {
-    console.log('Getting random meal...');
-    // todo: API integration = fetch random meal
+  const handleRandomMeal = async () => {
+    // clear filters when getting random
+    setSelectedCategory(null);
+    setSelectedArea(null);
+    setSearchQuery('');
+
+    setLoading(true);
+    const randomMeal = await getRandomMeal();
+    if (randomMeal) {
+      setMeals([randomMeal]);
+
+      // Increment random meals stat
+      const user = auth.currentUser;
+      // Removed call to dbLocal.incrementStat as it does not exist.
+    }
+    setLoading(false);
   };
 
-  const handleCategoryFilter = () => {
-    console.log('Filter by category:', selectedCategory);
-    // todo: API integration = filter by category
+  const handleCategoryFilter = async (category) => {
+    // clear search and area filter
+    setSearchQuery('');
+    setSelectedArea(null);
+
+    if (selectedCategory === category) {
+      // deselect if clicking the same category
+      setSelectedCategory(null);
+      setMeals([]);
+      return;
+    }
+
+    setSelectedCategory(category);
+    setLoading(true);
+    const results = await filterByCategory(category);
+    setMeals(results);
+    setLoading(false);
   };
 
-  const handleAreaFilter = () => {
-    console.log('Filter by area:', selectedArea);
-    // todo: API integration = filter by area
+  const handleAreaFilter = async (area) => {
+    // clear search and category filter
+    setSearchQuery('');
+    setSelectedCategory(null);
+
+    if (selectedArea === area) {
+      // deselect if clicking the same area
+      setSelectedArea(null);
+      setMeals([]);
+      return;
+    }
+
+    setSelectedArea(area);
+    setLoading(true);
+    const results = await filterByArea(area);
+    setMeals(results);
+    setLoading(false);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory(null);
+    setSelectedArea(null);
+    setSearchQuery('');
+    setMeals([]);
   };
 
   const renderMealCard = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.mealCard}
-      onPress={() => console.log('Tapped meal:', item.strMeal)}
+      onPress={() => navigation.navigate('RecipeDetail', { mealId: item.idMeal })}
     >
-      <Image 
-        source={{ uri: item.strMealThumb }} 
+      <Image
+        source={{ uri: item.strMealThumb }}
         style={styles.mealImage}
         resizeMode="cover"
       />
@@ -68,8 +135,22 @@ const DiscoverScreen = () => {
   );
 
   return (
+
     <View style={styles.container}>
+
       {/* Header */}
+      <View style={styles.userHeader}>
+        <View style={styles.userHeaderRow}>
+          <Image
+            source={require('../assets/149071.png')}
+            style={styles.userHeaderImage}
+          />
+          <Text style={styles.userHeaderText}>
+            Hello{username ? `, ${username}` : ''} 👋
+          </Text>
+        </View>
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.title}>Discover Recipes</Text>
       </View>
@@ -92,17 +173,146 @@ const DiscoverScreen = () => {
         )}
       </View>
 
+      {/* Filter Mode Toggle */}
+      <View style={styles.filterModeContainer}>
+        <TouchableOpacity
+          style={[styles.filterModeButton, filterMode === 'category' && styles.filterModeButtonActive]}
+          onPress={() => setFilterMode('category')}
+        >
+          <Ionicons
+            name="restaurant"
+            size={18}
+            color={filterMode === 'category' ? '#fff' : '#0782F9'}
+            style={{ marginRight: 4 }}
+          />
+          <Text style={[styles.filterModeText, filterMode === 'category' && styles.filterModeTextActive]}>
+            Categories
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.filterModeButton, filterMode === 'area' && styles.filterModeButtonActive]}
+          onPress={() => setFilterMode('area')}
+        >
+          <Ionicons
+            name="globe"
+            size={18}
+            color={filterMode === 'area' ? '#fff' : '#0782F9'}
+            style={{ marginRight: 4 }}
+          />
+          <Text style={[styles.filterModeText, filterMode === 'area' && styles.filterModeTextActive]}>
+            Cuisines
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Filter Chips */}
+      <View style={styles.filterChipsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterChipsContent}
+        >
+          {filterMode === 'category' ? (
+            CATEGORIES.map((category) => (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.filterChip,
+                  selectedCategory === category && styles.filterChipActive
+                ]}
+                onPress={() => handleCategoryFilter(category)}
+              >
+                <Text style={[
+                  styles.filterChipText,
+                  selectedCategory === category && styles.filterChipTextActive
+                ]}>
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            AREAS.map((area) => (
+              <TouchableOpacity
+                key={area}
+                style={[
+                  styles.filterChip,
+                  selectedArea === area && styles.filterChipActive
+                ]}
+                onPress={() => handleAreaFilter(area)}
+              >
+                <Text style={[
+                  styles.filterChipText,
+                  selectedArea === area && styles.filterChipTextActive
+                ]}>
+                  {area}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+      </View>
+
+      {/* Active Filter & Clear Button */}
+      {(selectedCategory || selectedArea) && (
+        <View style={styles.activeFilterContainer}>
+          <View style={styles.activeFilterBadge}>
+            <Ionicons name="funnel" size={14} color="#0782F9" style={{ marginRight: 4 }} />
+            <Text style={styles.activeFilterText}>
+              {selectedCategory || selectedArea}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={clearFilters} style={styles.clearButton}>
+            <Text style={styles.clearButtonText}>Clear</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Random Recipe Button */}
+      <TouchableOpacity
+        style={[
+          styles.randomButton,
+          !(selectedCategory || selectedArea) && styles.randomButtonNoFilter
+        ]}
+        onPress={handleRandomMeal}
+        disabled={loading}
+      >
+        <Ionicons name="shuffle" size={20} color="#fff" style={{ marginRight: 6 }} />
+        <Text style={styles.randomButtonText}>Surprise Me!</Text>
+      </TouchableOpacity>
+
       {/* Results Count */}
-      <Text style={styles.resultsCount}>{meals.length} recipes found</Text>
+      {meals.length > 0 && !loading && (
+        <Text style={styles.resultsCount}>{meals.length} recipe{meals.length > 1 ? 's' : ''} found</Text>
+      )}
+
+      {/* Loading Indicator */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0782F9" />
+          <Text style={styles.loadingText}>Loading recipes...</Text>
+        </View>
+      )}
 
       {/* Recipe List */}
-      <FlatList
-        data={meals}
-        renderItem={renderMealCard}
-        keyExtractor={(item) => item.idMeal}
-        contentContainerStyle={styles.mealList}
-        showsVerticalScrollIndicator={false}
-      />
+      {!loading && (
+        <FlatList
+          data={meals}
+          renderItem={renderMealCard}
+          keyExtractor={(item) => item.idMeal}
+          contentContainerStyle={styles.mealList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="search-outline" size={64} color="#ccc" />
+              <Text style={styles.emptyText}>
+                {selectedCategory || selectedArea
+                  ? 'No recipes found for this filter'
+                  : 'Search, filter, or try a random recipe!'}
+              </Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 };
@@ -129,7 +339,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     backgroundColor: '#f5f5f5',
@@ -143,11 +353,151 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  filterModeContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    padding: 4,
+  },
+  filterModeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  filterModeButtonActive: {
+    backgroundColor: '#0782F9',
+  },
+  filterModeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0782F9',
+  },
+  filterModeTextActive: {
+    color: '#fff',
+  },
+  filterChipsWrapper: {
+    height: 58,
+    marginBottom: 0,
+  },
+  filterChipsContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  filterChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 10,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    height: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterChipActive: {
+    backgroundColor: '#0782F9',
+    borderColor: '#0782F9',
+  },
+  filterChipText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
+  },
+  filterChipTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  activeFilterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#E3F2FD',
+    borderRadius: 10,
+  },
+  activeFilterBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  activeFilterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0782F9',
+  },
+  clearButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  clearButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0782F9',
+  },
+  randomButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF6B6B',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    paddingVertical: 12,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  randomButtonNoFilter: {
+    marginTop: 16,
+  },
+  randomButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   resultsCount: {
     marginHorizontal: 16,
     marginBottom: 12,
     fontSize: 14,
     color: '#666',
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
   mealList: {
     paddingHorizontal: 16,
@@ -186,5 +536,25 @@ const styles = StyleSheet.create({
   mealCategory: {
     fontSize: 14,
     color: '#666',
+  },
+  userHeader: {
+    paddingTop: 50,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+  },
+  userHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userHeaderImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  userHeaderText: {
+    fontSize: 20,
+    fontWeight: '600',
   },
 });

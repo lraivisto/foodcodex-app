@@ -147,8 +147,8 @@ const AddRecipeScreen = ({ route }) => {
             <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Recipe name" />
 
             <Text style={styles.label}>Category</Text>
-            <TouchableOpacity 
-                style={styles.input} 
+            <TouchableOpacity
+                style={styles.input}
                 onPress={() => setShowCategoryPicker(true)}
             >
                 <Text style={category ? styles.selectedText : styles.placeholderText}>
@@ -163,12 +163,12 @@ const AddRecipeScreen = ({ route }) => {
                 animationType="slide"
                 onRequestClose={() => setShowCategoryPicker(false)}
             >
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.modalOverlay}
                     activeOpacity={1}
                     onPress={() => setShowCategoryPicker(false)}
                 >
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.pickerContainer}
                         activeOpacity={1}
                     >
@@ -196,8 +196,8 @@ const AddRecipeScreen = ({ route }) => {
             </Modal>
 
             <Text style={styles.label}>Area</Text>
-            <TouchableOpacity 
-                style={styles.input} 
+            <TouchableOpacity
+                style={styles.input}
                 onPress={() => setShowAreaPicker(true)}
             >
                 <Text style={area ? styles.selectedText : styles.placeholderText}>
@@ -212,12 +212,12 @@ const AddRecipeScreen = ({ route }) => {
                 animationType="slide"
                 onRequestClose={() => setShowAreaPicker(false)}
             >
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.modalOverlay}
                     activeOpacity={1}
                     onPress={() => setShowAreaPicker(false)}
                 >
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.pickerContainer}
                         activeOpacity={1}
                     >

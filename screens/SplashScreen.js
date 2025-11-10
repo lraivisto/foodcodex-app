@@ -12,11 +12,11 @@ export default function SplashScreen() {
     >
       <View style={styles.welcomeBox}>
         <Text style={styles.welcomeText}>Welcome to FoodCodex</Text>
-        <Text style={{fontSize:16}}>Your personal food companion</Text>
-      </View> 
+        <Text style={{ fontSize: 16 }}>Your personal food companion</Text>
+      </View>
 
       <View style={styles.imageBox}>
-        <Image style={styles.img} source={require("../assets/ChatGPT Image Nov 9, 2025, 06_35_57 PM.png")}/>
+        <Image style={styles.img} source={require("../assets/ChatGPT Image Nov 9, 2025, 06_35_57 PM.png")} />
       </View>
 
       <View style={styles.welcomeBox}>
@@ -48,45 +48,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-    welcomeBox:{
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 100
-    },
+  welcomeBox: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 100
+  },
   welcomeText: {
     fontWeight: 'bold',
     fontSize: 25
   },
-    button:{
-      backgroundColor: '#0782F9',
-      width: '100%',
-      padding: 12,
-      borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 10
-    },
-    buttonText:{
-      color: 'white',
-      fontWeight: '700',
-      fontSize: 16
-    },
-    buttonContainer:{
-      width: '60%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 40
-    },
+  button: {
+    backgroundColor: '#0782F9',
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16
+  },
+  buttonContainer: {
+    width: '60%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40
+  },
 
-    imageBox:{
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 50
-    },
+  imageBox: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 50
+  },
 
-    img:{
-      width: 200,
-      height: 200
-    }
+  img: {
+    width: 200,
+    height: 200
+  }
 })

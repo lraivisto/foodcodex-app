@@ -9,19 +9,32 @@ import SplashScreen from './screens/SplashScreen';
 import AddRecipeScreen from './screens/AddRecipeScreen';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase'
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [splashSeen, setSplashSeen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
-    const checkSplash = async () => {
-      if (await AsyncStorage.getItem('splashSeen') !== null) setSplashSeen(true);
-      setLoading(false);
-    }
-    checkSplash();
-  }, [])
+    const init = async () => {
+      const seen = await AsyncStorage.getItem('splashSeen');
+      if (seen) setSplashSeen(true);
+
+      // wait for firebase to tell us if there is a user
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+        setLoading(false); // <-- only stop loading after we know the user
+      });
+
+      return () => unsubscribe();
+    };
+
+    init();
+  }, []);
 
 
   if(loading){
@@ -34,7 +47,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={splashSeen ? 'Login' : 'Splash'}>
+      <Stack.Navigator initialRouteName={splashSeen ? (user ? 'Home' : 'Login') : 'Splash'}>
         <Stack.Screen
           name="Splash"
           options={{ headerShown: false }}

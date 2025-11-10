@@ -46,10 +46,20 @@ const MyRecipeScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              const user = auth.currentUser;
               const recipeToDelete = recipes.find(r => r.id === id);
+
+              // delete the recipe from user_recipes
               await db.deleteUserRecipe(id);
               console.log(`[RECIPE] Recipe deleted successfully: ${recipeToDelete?.name || 'Unknown'} (ID: ${id})`);
-              load(); // reload the list after delete
+
+              // remove from favorites if it exists there
+              if (user) {
+                await db.removeFavorite(user.uid, `user_${id}`);
+                console.log(`[RECIPE] Also removed from favorites: user_${id}`);
+              }
+
+              load(); // reload list after delete
             } catch (e) {
               console.error('[RECIPE] Delete failed:', e);
               Alert.alert('Error', 'Could not delete recipe');
@@ -70,6 +80,31 @@ const MyRecipeScreen = () => {
     }
   };
 
+  const handleAddToFavorites = async (recipe) => {
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Sign In Required', 'Please sign in to add favorites');
+      return;
+    }
+
+    // For user recipes, we'll use the recipe ID as meal_id with a prefix to distinguish from API meals
+    const success = await db.addFavorite(user.uid, {
+      meal_id: `user_${recipe.id}`,
+      meal_name: recipe.name,
+      meal_thumbnail: recipe.image_uri || null,
+      category: recipe.category,
+      area: recipe.area,
+      instructions: recipe.instructions,
+      ingredients: recipe.ingredients,
+    });
+
+    if (success) {
+      Alert.alert('Success', 'Added to favorites!');
+    } else {
+      Alert.alert('Error', 'Failed to add to favorites');
+    }
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       {item.image_uri ? (
@@ -81,6 +116,9 @@ const MyRecipeScreen = () => {
         <Text style={styles.title}>{item.name}</Text>
         <Text style={styles.meta}>{item.category} • {item.area}</Text>
         <View style={styles.row}>
+          <TouchableOpacity onPress={() => handleAddToFavorites(item)} style={styles.favoriteButton}>
+            <Ionicons name="heart-outline" size={16} color="#0782F9" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleEdit(item.id)} style={styles.smallButton}>
             <Text style={styles.smallButtonText}>Edit</Text>
           </TouchableOpacity>
@@ -94,7 +132,9 @@ const MyRecipeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>My Recipes</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>My Recipes</Text>
+      </View>
       {recipes.length === 0 ? (
         <View style={styles.empty}><Text style={{ color: '#666' }}>You have no saved recipes yet. Tap + to add one.</Text></View>
       ) : (
@@ -112,7 +152,13 @@ export default MyRecipeScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: '700', padding: 16 },
+  headerContainer: {
+    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: '#fff',
+  },
+  header: { fontSize: 28, fontWeight: '700', color: '#000' },
   empty: { padding: 16, alignItems: 'center' },
   card: { flexDirection: 'row', backgroundColor: '#fafafa', marginBottom: 12, borderRadius: 8, overflow: 'hidden' },
   thumb: { width: 96, height: 96 },
@@ -120,7 +166,18 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1, padding: 12 },
   title: { fontSize: 16, fontWeight: '700' },
   meta: { color: '#666', marginTop: 4 },
-  row: { flexDirection: 'row', marginTop: 8 },
+  row: { flexDirection: 'row', marginTop: 8, alignItems: 'center' },
+  favoriteButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#0782F9',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   smallButton: { backgroundColor: '#0782F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, marginRight: 8 },
   smallButtonText: { color: '#fff', fontWeight: '600' },
   fab: { position: 'absolute', right: 18, bottom: 24, backgroundColor: '#0782F9', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' }

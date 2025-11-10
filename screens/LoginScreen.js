@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { auth } from '../firebase'
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 const LoginScreen = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false);
   const navigator = useNavigation();
 
 
@@ -16,6 +17,7 @@ const LoginScreen = () => {
       alert("All fields must be filled!");
       return;
     }
+    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -27,6 +29,7 @@ const LoginScreen = () => {
     } finally {
       setEmail("");
       setPassword("");
+      setLoading(false);
     }
   }
 
@@ -37,6 +40,13 @@ const LoginScreen = () => {
       style={styles.container}
       behavior="padding"
     >
+      {loading &&
+          <View style={styles.loaderContainer}>
+            <Text style={styles.loaderText}>Logging</Text>
+            <ActivityIndicator size={40} color="#007AFF" />
+          </View>
+      }
+      
       <View style={styles.welcomeStyle}>
         <Text style={styles.welcomeText}>Hello,</Text>
         <Text>Log in or Sign up to save your favorites recipes</Text>
@@ -93,7 +103,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: '#fff'
   },
 
   inputContainer: {
@@ -112,7 +123,7 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: 'white',
+    backgroundColor: '#f5f5f5',
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 24,
@@ -151,6 +162,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '700',
     fontSize: 16
+  },
+
+  loaderContainer: {
+    position: 'absolute',     // makes it overlay everything
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)', // optional translucent backdrop
+    zIndex: 10,               // ensures it appears on top
+    },
+
+  loaderText: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#007AFF',
+    marginRight: 12, // space between text and spinner
   },
 
 

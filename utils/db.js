@@ -199,6 +199,23 @@ async function removeFavorite(userId, mealId) {
   await AsyncStorage.setItem(key, JSON.stringify(newArr));
 }
 
+async function deleteAllUserData(userId) {
+  if (!userId) return;
+
+  if (sqliteAvailable) {
+    // delete everything tied to this user in sqlite
+    await executeSqlAsync('DELETE FROM user_recipes WHERE user_id = ?;', [userId]);
+    await executeSqlAsync('DELETE FROM favorites WHERE user_id = ?;', [userId]);
+  } else {
+    // AsyncStorage fallback: just remove the two keys for this user
+    const recipesKey = AS_KEYS.USER_RECIPES(userId);
+    const favoritesKey = AS_KEYS.FAVORITES(userId);
+    await AsyncStorage.removeItem(recipesKey);
+    await AsyncStorage.removeItem(favoritesKey);
+  }
+}
+
+
 export default {
   initDB,
   getUserRecipes,
@@ -208,4 +225,5 @@ export default {
   getFavorites,
   addFavorite,
   removeFavorite,
+  deleteAllUserData
 };
