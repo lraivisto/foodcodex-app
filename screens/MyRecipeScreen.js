@@ -70,6 +70,31 @@ const MyRecipeScreen = () => {
     }
   };
 
+  const handleAddToFavorites = async (recipe) => {
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Sign In Required', 'Please sign in to add favorites');
+      return;
+    }
+
+    // For user recipes, we'll use the recipe ID as meal_id with a prefix to distinguish from API meals
+    const success = await db.addFavorite(user.uid, {
+      meal_id: `user_${recipe.id}`,
+      meal_name: recipe.name,
+      meal_thumbnail: recipe.image_uri || null,
+      category: recipe.category,
+      area: recipe.area,
+      instructions: recipe.instructions,
+      ingredients: recipe.ingredients,
+    });
+
+    if (success) {
+      Alert.alert('Success', 'Added to favorites!');
+    } else {
+      Alert.alert('Error', 'Failed to add to favorites');
+    }
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       {item.image_uri ? (
@@ -81,6 +106,9 @@ const MyRecipeScreen = () => {
         <Text style={styles.title}>{item.name}</Text>
         <Text style={styles.meta}>{item.category} • {item.area}</Text>
         <View style={styles.row}>
+          <TouchableOpacity onPress={() => handleAddToFavorites(item)} style={styles.favoriteButton}>
+            <Ionicons name="heart-outline" size={16} color="#0782F9" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleEdit(item.id)} style={styles.smallButton}>
             <Text style={styles.smallButtonText}>Edit</Text>
           </TouchableOpacity>
@@ -120,7 +148,18 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1, padding: 12 },
   title: { fontSize: 16, fontWeight: '700' },
   meta: { color: '#666', marginTop: 4 },
-  row: { flexDirection: 'row', marginTop: 8 },
+  row: { flexDirection: 'row', marginTop: 8, alignItems: 'center' },
+  favoriteButton: { 
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#0782F9',
+    paddingHorizontal: 10, 
+    paddingVertical: 6, 
+    borderRadius: 6, 
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   smallButton: { backgroundColor: '#0782F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6, marginRight: 8 },
   smallButtonText: { color: '#fff', fontWeight: '600' },
   fab: { position: 'absolute', right: 18, bottom: 24, backgroundColor: '#0782F9', width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' }

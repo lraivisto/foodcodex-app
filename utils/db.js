@@ -34,6 +34,18 @@ const AS_KEYS = {
 
 async function initDB() {
   if (sqliteAvailable) {
+    // Create or update favorites table with migration support
+    try {
+      // Try to add new columns to existing table (if it exists)
+      // This will fail silently if columns already exist
+      await executeSqlAsync(`ALTER TABLE favorites ADD COLUMN category TEXT;`).catch(() => {});
+      await executeSqlAsync(`ALTER TABLE favorites ADD COLUMN area TEXT;`).catch(() => {});
+      await executeSqlAsync(`ALTER TABLE favorites ADD COLUMN instructions TEXT;`).catch(() => {});
+      await executeSqlAsync(`ALTER TABLE favorites ADD COLUMN ingredients TEXT;`).catch(() => {});
+    } catch (e) {
+      // Table might not exist yet, create it fresh
+    }
+
     // Create tables if they don't exist
     await executeSqlAsync(
       `CREATE TABLE IF NOT EXISTS favorites (
@@ -42,6 +54,10 @@ async function initDB() {
         meal_id TEXT,
         meal_name TEXT,
         meal_thumbnail TEXT,
+        category TEXT,
+        area TEXT,
+        instructions TEXT,
+        ingredients TEXT,
         UNIQUE(user_id, meal_id)
       );`
     );
@@ -154,7 +170,12 @@ async function getFavorites(userId) {
   if (!userId) return [];
   if (sqliteAvailable) {
     const res = await executeSqlAsync('SELECT * FROM favorites WHERE user_id = ? ORDER BY id DESC;', [userId]);
-    return res.rows._array || [];
+    const rows = res.rows._array || [];
+    // Parse ingredients JSON if present
+    return rows.map(r => ({
+      ...r,
+      ingredients: r.ingredients ? JSON.parse(r.ingredients) : null
+    }));
   }
   const key = AS_KEYS.FAVORITES(userId);
   const raw = await AsyncStorage.getItem(key);
@@ -163,26 +184,50 @@ async function getFavorites(userId) {
 }
 
 async function addFavorite(userId, meal) {
-  // meal: { meal_id, meal_name, meal_thumbnail }
+  // meal: { meal_id, meal_name, meal_thumbnail, category?, area?, instructions?, ingredients? }
   try {
     if (sqliteAvailable) {
       await executeSqlAsync(
-        `INSERT OR IGNORE INTO favorites (user_id, meal_id, meal_name, meal_thumbnail) VALUES (?, ?, ?, ?);`,
-        [userId, meal.meal_id, meal.meal_name, meal.meal_thumbnail]
+        `INSERT OR REPLACE INTO favorites (user_id, meal_id, meal_name, meal_thumbnail, category, area, instructions, ingredients) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+        [
+          userId, 
+          meal.meal_id, 
+          meal.meal_name, 
+          meal.meal_thumbnail,
+          meal.category || null,
+          meal.area || null,
+          meal.instructions || null,
+          meal.ingredients ? JSON.stringify(meal.ingredients) : null
+        ]
       );
       return true;
     }
     const key = AS_KEYS.FAVORITES(userId);
     const raw = await AsyncStorage.getItem(key);
     const arr = raw ? JSON.parse(raw) : [];
-    // prevent duplicate by meal_id
-    if (!arr.some(f => f.meal_id === meal.meal_id)) {
-      const id = Date.now();
-      arr.push({ id, user_id: userId, meal_id: meal.meal_id, meal_name: meal.meal_name, meal_thumbnail: meal.meal_thumbnail });
-      await AsyncStorage.setItem(key, JSON.stringify(arr));
+    // prevent duplicate by meal_id, but update if exists
+    const existingIndex = arr.findIndex(f => f.meal_id === meal.meal_id);
+    const favoriteItem = { 
+      id: existingIndex >= 0 ? arr[existingIndex].id : Date.now(),
+      user_id: userId, 
+      meal_id: meal.meal_id, 
+      meal_name: meal.meal_name, 
+      meal_thumbnail: meal.meal_thumbnail,
+      category: meal.category || null,
+      area: meal.area || null,
+      instructions: meal.instructions || null,
+      ingredients: meal.ingredients || null
+    };
+    
+    if (existingIndex >= 0) {
+      arr[existingIndex] = favoriteItem;
+    } else {
+      arr.push(favoriteItem);
     }
+    await AsyncStorage.setItem(key, JSON.stringify(arr));
     return true;
   } catch (e) {
+    console.error('Error adding favorite:', e);
     return false;
   }
 }

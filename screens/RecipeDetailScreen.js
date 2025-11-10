@@ -3,13 +3,14 @@ import { View, Text, StyleSheet, ScrollView, Image, ActivityIndicator, Touchable
 import { Ionicons } from '@expo/vector-icons';
 import { getMealById, parseIngredients } from '../utils/api';
 import { auth } from '../firebase';
-import { addFavorite } from '../utils/db';
+import db from '../utils/db';
 
 const RecipeDetailScreen = ({ route, navigation }) => {
-    const { mealId } = route.params;
+    const { mealId, userRecipeData } = route.params;
     const [meal, setMeal] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isUserRecipe, setIsUserRecipe] = useState(false);
 
     useEffect(() => {
         loadMealDetails();
@@ -17,9 +18,30 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
     const loadMealDetails = async () => {
         setLoading(true);
-        const mealData = await getMealById(mealId);
-        setMeal(mealData);
-        setLoading(false);
+        
+        // Check if this is a user recipe
+        if (mealId?.startsWith('user_') && userRecipeData) {
+            // Use the passed user recipe data directly
+            setIsUserRecipe(true);
+            setMeal({
+                idMeal: userRecipeData.meal_id,
+                strMeal: userRecipeData.meal_name,
+                strMealThumb: userRecipeData.meal_thumbnail,
+                strCategory: userRecipeData.category,
+                strArea: userRecipeData.area,
+                strInstructions: userRecipeData.instructions,
+                // Convert ingredients back to meal format if needed
+                ...(userRecipeData.ingredients ? { parsedIngredients: userRecipeData.ingredients } : {})
+            });
+            setIsFavorite(true); // Already in favorites
+            setLoading(false);
+        } else {
+            // Fetch from API for regular meals
+            const mealData = await getMealById(mealId);
+            setMeal(mealData);
+            setIsUserRecipe(false);
+            setLoading(false);
+        }
     };
 
     const handleAddToFavorites = async () => {
@@ -31,7 +53,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
         if (!meal) return;
 
-        const success = await addFavorite(user.uid, {
+        const success = await db.addFavorite(user.uid, {
             meal_id: meal.idMeal,
             meal_name: meal.strMeal,
             meal_thumbnail: meal.strMealThumb,
@@ -40,6 +62,8 @@ const RecipeDetailScreen = ({ route, navigation }) => {
         if (success) {
             setIsFavorite(true);
             alert('Added to favorites!');
+        } else {
+            alert('Failed to add to favorites');
         }
     };
 
@@ -77,7 +101,8 @@ const RecipeDetailScreen = ({ route, navigation }) => {
         );
     }
 
-    const ingredients = parseIngredients(meal);
+    // Handle ingredients for both API meals and user recipes
+    const ingredients = meal.parsedIngredients || parseIngredients(meal);
 
     return (
         <ScrollView style={styles.container}>
@@ -120,14 +145,18 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                 {/* Ingredients */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Ingredients</Text>
-                    {ingredients.map((item, index) => (
-                        <View key={index} style={styles.ingredientRow}>
-                            <Ionicons name="ellipse" size={8} color="#0782F9" style={styles.bullet} />
-                            <Text style={styles.ingredientText}>
-                                {item.measure} {item.name}
-                            </Text>
-                        </View>
-                    ))}
+                    {ingredients && ingredients.length > 0 ? (
+                        ingredients.map((item, index) => (
+                            <View key={index} style={styles.ingredientRow}>
+                                <Ionicons name="ellipse" size={8} color="#0782F9" style={styles.bullet} />
+                                <Text style={styles.ingredientText}>
+                                    {typeof item === 'string' ? item : `${item.measure || ''} ${item.name || ''}`}
+                                </Text>
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={styles.ingredientText}>No ingredients listed</Text>
+                    )}
                 </View>
 
                 {/* Instructions */}
