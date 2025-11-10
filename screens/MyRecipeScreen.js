@@ -46,10 +46,20 @@ const MyRecipeScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              const user = auth.currentUser;
               const recipeToDelete = recipes.find(r => r.id === id);
+
+              // delete the recipe from user_recipes
               await db.deleteUserRecipe(id);
               console.log(`[RECIPE] Recipe deleted successfully: ${recipeToDelete?.name || 'Unknown'} (ID: ${id})`);
-              load(); // reload the list after delete
+
+              // remove from favorites if it exists there
+              if (user) {
+                await db.removeFavorite(user.uid, `user_${id}`);
+                console.log(`[RECIPE] Also removed from favorites: user_${id}`);
+              }
+
+              load(); // reload list after delete
             } catch (e) {
               console.error('[RECIPE] Delete failed:', e);
               Alert.alert('Error', 'Could not delete recipe');
@@ -149,13 +159,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '700' },
   meta: { color: '#666', marginTop: 4 },
   row: { flexDirection: 'row', marginTop: 8, alignItems: 'center' },
-  favoriteButton: { 
+  favoriteButton: {
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#0782F9',
-    paddingHorizontal: 10, 
-    paddingVertical: 6, 
-    borderRadius: 6, 
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
     marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
