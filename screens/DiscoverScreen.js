@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FF6B6B',
     marginHorizontal: 16,
-    marginTop: 12,
+    marginTop: 8,
     marginBottom: 16,
     paddingVertical: 12,
     borderRadius: 10,
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   randomButtonNoFilter: {
-    marginTop: 24,
+    marginTop: 16,
   },
   randomButtonText: {
     color: '#fff',
