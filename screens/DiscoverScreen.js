@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image,
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { searchMealsByName, getRandomMeal, filterByCategory, filterByArea } from '../utils/api';
+import db from '../utils/db';
+import { auth } from '../firebase';
 
 const CATEGORIES = [
   'Beef', 'Chicken', 'Dessert', 'Lamb', 'Pasta', 'Pork', 'Seafood', 'Vegetarian', 'Vegan', 'Breakfast', 'Starter', 'Side'
@@ -44,6 +46,12 @@ const DiscoverScreen = () => {
     const randomMeal = await getRandomMeal();
     if (randomMeal) {
       setMeals([randomMeal]);
+
+      // Increment random meals stat
+      const user = auth.currentUser;
+      if (user) {
+        await db.incrementStat(user.uid, 'random_meals_searched');
+      }
     }
     setLoading(false);
   };

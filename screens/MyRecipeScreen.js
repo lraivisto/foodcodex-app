@@ -132,7 +132,9 @@ const MyRecipeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>My Recipes</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>My Recipes</Text>
+      </View>
       {recipes.length === 0 ? (
         <View style={styles.empty}><Text style={{ color: '#666' }}>You have no saved recipes yet. Tap + to add one.</Text></View>
       ) : (
@@ -150,7 +152,13 @@ export default MyRecipeScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { fontSize: 24, fontWeight: '700', padding: 16 },
+  headerContainer: {
+    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: '#fff',
+  },
+  header: { fontSize: 28, fontWeight: '700', color: '#000' },
   empty: { padding: 16, alignItems: 'center' },
   card: { flexDirection: 'row', backgroundColor: '#fafafa', marginBottom: 12, borderRadius: 8, overflow: 'hidden' },
   thumb: { width: 96, height: 96 },

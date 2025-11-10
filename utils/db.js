@@ -30,6 +30,7 @@ function executeSqlAsync(sql, params = []) {
 const AS_KEYS = {
   USER_RECIPES: (userId) => `fc_user_recipes:${userId}`,
   FAVORITES: (userId) => `fc_favorites:${userId}`,
+  USER_STATS: (userId) => `fc_user_stats:${userId}`,
 };
 
 async function initDB() {
@@ -72,6 +73,17 @@ async function initDB() {
         instructions TEXT,
         image_uri TEXT,
         ingredients TEXT
+      );`
+    );
+
+    // Create user_stats table for tracking user activity
+    await executeSqlAsync(
+      `CREATE TABLE IF NOT EXISTS user_stats (
+        id INTEGER PRIMARY KEY NOT NULL,
+        user_id TEXT UNIQUE,
+        random_meals_searched INTEGER DEFAULT 0,
+        recipes_created INTEGER DEFAULT 0,
+        favorites_added INTEGER DEFAULT 0
       );`
     );
   } else {
@@ -250,6 +262,66 @@ async function removeFavorite(userId, mealId) {
   }
 }
 
+// User Statistics
+async function getUserStats(userId) {
+  if (!userId) return { random_meals_searched: 0, recipes_created: 0, favorites_added: 0 };
+  
+  try {
+    if (sqliteAvailable) {
+      // Get or create stats
+      const res = await executeSqlAsync('SELECT * FROM user_stats WHERE user_id = ?;', [userId]);
+      if (res.rows.length > 0) {
+        return res.rows._array[0];
+      } else {
+        // Create initial stats
+        await executeSqlAsync(
+          'INSERT INTO user_stats (user_id, random_meals_searched, recipes_created, favorites_added) VALUES (?, 0, 0, 0);',
+          [userId]
+        );
+        return { random_meals_searched: 0, recipes_created: 0, favorites_added: 0 };
+      }
+    }
+    
+    // AsyncStorage fallback
+    const key = AS_KEYS.USER_STATS(userId);
+    const raw = await AsyncStorage.getItem(key);
+    if (raw) {
+      return JSON.parse(raw);
+    }
+    const initialStats = { random_meals_searched: 0, recipes_created: 0, favorites_added: 0 };
+    await AsyncStorage.setItem(key, JSON.stringify(initialStats));
+    return initialStats;
+  } catch (e) {
+    console.error('Error getting user stats:', e);
+    return { random_meals_searched: 0, recipes_created: 0, favorites_added: 0 };
+  }
+}
+
+async function incrementStat(userId, statName) {
+  if (!userId) return;
+  
+  try {
+    if (sqliteAvailable) {
+      // Ensure stats row exists
+      await getUserStats(userId);
+      
+      // Increment the specific stat
+      await executeSqlAsync(
+        `UPDATE user_stats SET ${statName} = ${statName} + 1 WHERE user_id = ?;`,
+        [userId]
+      );
+    } else {
+      // AsyncStorage fallback
+      const key = AS_KEYS.USER_STATS(userId);
+      const stats = await getUserStats(userId);
+      stats[statName] = (stats[statName] || 0) + 1;
+      await AsyncStorage.setItem(key, JSON.stringify(stats));
+    }
+  } catch (e) {
+    console.error('Error incrementing stat:', e);
+  }
+}
+
 export default {
   initDB,
   getUserRecipes,
@@ -259,4 +331,6 @@ export default {
   getFavorites,
   addFavorite,
   removeFavorite,
+  getUserStats,
+  incrementStat,
 };

@@ -33,7 +33,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
 
     const loadMealDetails = async () => {
         setLoading(true);
-        
+
         // Check if this is a user recipe
         if (mealId?.startsWith('user_') && userRecipeData) {
             // Use the passed user recipe data directly
@@ -80,7 +80,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                         onPress: async () => {
                             try {
                                 const success = await db.removeFavorite(user.uid, meal.idMeal);
-                                
+
                                 if (success) {
                                     setIsFavorite(false);
                                     Alert.alert('Success', 'Removed from favorites!');
