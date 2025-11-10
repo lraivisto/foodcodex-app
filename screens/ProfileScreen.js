@@ -70,7 +70,7 @@ export default function ProfileScreen() {
                 // 3. delete auth user
                 await deleteUser(user);
                 // 4. confirmation alert
-                Alert.alert('Done', 'Your account and user\'s data have been deleted.', [
+                Alert.alert('Done', 'Your account and user data have been deleted.', [
                     {
                     text: 'OK',
                     onPress: () => {
