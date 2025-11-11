@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 let sqliteAvailable = false;
 let SQLite;
+
 try {
   // dynamic require to avoid bundling issues on web
   SQLite = require('expo-sqlite');
@@ -42,9 +43,13 @@ async function initDB() {
         meal_id TEXT,
         meal_name TEXT,
         meal_thumbnail TEXT,
+        youtube_url TEXT,
         UNIQUE(user_id, meal_id)
       );`
     );
+
+    // try to add the column if table already existed
+    await executeSqlAsync(`ALTER TABLE favorites ADD COLUMN youtube_url TEXT;`).catch(() => {});
 
     await executeSqlAsync(
       `CREATE TABLE IF NOT EXISTS user_recipes (
@@ -55,9 +60,14 @@ async function initDB() {
         area TEXT,
         instructions TEXT,
         image_uri TEXT,
-        ingredients TEXT
+        ingredients TEXT,
+        youtube_url TEXT
       );`
     );
+
+    // same here: add column if table was created before
+    await executeSqlAsync(`ALTER TABLE user_recipes ADD COLUMN youtube_url TEXT;`).catch(() => {});
+
   } else {
     // AsyncStorage fallback requires no initialization
     return;
@@ -82,12 +92,12 @@ async function getUserRecipes(userId) {
 }
 
 async function addUserRecipe(userId, recipe) {
-  const { name, category, area, instructions, image_uri = null, ingredients = [] } = recipe;
+  const { name, category, area, instructions, image_uri = null, ingredients = [], youtube_url = null } = recipe;
   if (sqliteAvailable) {
     const ingredientsText = JSON.stringify(ingredients);
     const res = await executeSqlAsync(
-      `INSERT INTO user_recipes (user_id, name, category, area, instructions, image_uri, ingredients) VALUES (?, ?, ?, ?, ?, ?, ?);`,
-      [userId, name, category, area, instructions, image_uri, ingredientsText]
+      `INSERT INTO user_recipes (user_id, name, category, area, instructions, image_uri, ingredients, youtube_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+      [userId, name, category, area, instructions, image_uri, ingredientsText, youtube_url]
     );
     return res.insertId;
   }
@@ -96,19 +106,19 @@ async function addUserRecipe(userId, recipe) {
   const raw = await AsyncStorage.getItem(key);
   const arr = raw ? JSON.parse(raw) : [];
   const id = Date.now();
-  const item = { id, user_id: userId, name, category, area, instructions, image_uri, ingredients };
+  const item = { id, user_id: userId, name, category, area, instructions, image_uri, ingredients, youtube_url };
   arr.push(item);
   await AsyncStorage.setItem(key, JSON.stringify(arr));
   return id;
 }
 
 async function updateUserRecipe(id, recipe) {
-  const { name, category, area, instructions, image_uri = null, ingredients = [] } = recipe;
+  const { name, category, area, instructions, image_uri = null, ingredients = [], youtube_url = null } = recipe;
   if (sqliteAvailable) {
     const ingredientsText = JSON.stringify(ingredients);
     await executeSqlAsync(
-      `UPDATE user_recipes SET name = ?, category = ?, area = ?, instructions = ?, image_uri = ?, ingredients = ? WHERE id = ?;`,
-      [name, category, area, instructions, image_uri, ingredientsText, id]
+      `UPDATE user_recipes SET name = ?, category = ?, area = ?, instructions = ?, image_uri = ?, ingredients = ?, youtube_url = ? WHERE id = ?;`,
+      [name, category, area, instructions, image_uri, ingredientsText, youtube_url, id]
     );
     return;
   }
@@ -121,7 +131,7 @@ async function updateUserRecipe(id, recipe) {
   const arr = raw ? JSON.parse(raw) : [];
   const idx = arr.findIndex(x => x.id === id);
   if (idx !== -1) {
-    arr[idx] = { ...arr[idx], name, category, area, instructions, image_uri, ingredients };
+    arr[idx] = { ...arr[idx], name, category, area, instructions, image_uri, ingredients, youtube_url };
     await AsyncStorage.setItem(key, JSON.stringify(arr));
   }
 }
@@ -163,12 +173,12 @@ async function getFavorites(userId) {
 }
 
 async function addFavorite(userId, meal) {
-  // meal: { meal_id, meal_name, meal_thumbnail }
+  // meal: { meal_id, meal_name, meal_thumbnail, youtube_url }
   try {
     if (sqliteAvailable) {
       await executeSqlAsync(
-        `INSERT OR IGNORE INTO favorites (user_id, meal_id, meal_name, meal_thumbnail) VALUES (?, ?, ?, ?);`,
-        [userId, meal.meal_id, meal.meal_name, meal.meal_thumbnail]
+        `INSERT OR IGNORE INTO favorites (user_id, meal_id, meal_name, meal_thumbnail, youtube_url) VALUES (?, ?, ?, ?, ?);`,
+        [userId, meal.meal_id, meal.meal_name, meal.meal_thumbnail, meal.youtube_url || null]
       );
       return true;
     }
@@ -178,7 +188,7 @@ async function addFavorite(userId, meal) {
     // prevent duplicate by meal_id
     if (!arr.some(f => f.meal_id === meal.meal_id)) {
       const id = Date.now();
-      arr.push({ id, user_id: userId, meal_id: meal.meal_id, meal_name: meal.meal_name, meal_thumbnail: meal.meal_thumbnail });
+      arr.push({ id, user_id: userId, meal_id: meal.meal_id, meal_name: meal.meal_name, meal_thumbnail: meal.meal_thumbnail, youtube_url: meal.youtube_url });
       await AsyncStorage.setItem(key, JSON.stringify(arr));
     }
     return true;

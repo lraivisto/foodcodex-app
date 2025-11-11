@@ -10,7 +10,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
     const [meal, setMeal] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isFavorite, setIsFavorite] = useState(false);
-    const [isUserRecipe, setIsUserRecipe] = useState(false);
+    const [_, setIsUserRecipe] = useState(false);
 
     useEffect(() => {
         loadMealDetails();
@@ -45,6 +45,7 @@ const RecipeDetailScreen = ({ route, navigation }) => {
                 strCategory: userRecipeData.category,
                 strArea: userRecipeData.area,
                 strInstructions: userRecipeData.instructions,
+                strYoutube: userRecipeData.youtube_url,
                 // Convert ingredients back to meal format if needed
                 ...(userRecipeData.ingredients ? { parsedIngredients: userRecipeData.ingredients } : {})
             });
@@ -124,20 +125,17 @@ const RecipeDetailScreen = ({ route, navigation }) => {
     };
 
     const handleOpenYouTube = async () => {
-        if (!meal?.strYoutube) return;
+        const url = meal?.strYoutube?.trim();
+        if (!url) return;
 
         try {
-            const canOpen = await Linking.canOpenURL(meal.strYoutube);
-            if (canOpen) {
-                await Linking.openURL(meal.strYoutube);
-            } else {
-                alert('Unable to open YouTube link');
-            }
-        } catch (error) {
-            console.error('Error opening YouTube link:', error);
-            alert('Unable to open YouTube link');
+            await Linking.openURL(url);
+        } catch (e) {
+            console.log('openURL failed, url=', url, e);
+            Alert.alert('Error', 'Unable to open YouTube link');
         }
     };
+
 
     if (loading) {
         return (
