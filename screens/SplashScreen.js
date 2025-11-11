@@ -19,9 +19,6 @@ export default function SplashScreen() {
         <Image style={styles.img} source={require("../assets/ChatGPT Image Nov 9, 2025, 06_35_57 PM.png")} />
       </View>
 
-      <View style={styles.welcomeBox}>
-        <Text style={{ color: 'grey' }}>(kuva tai ikoni tähän)...</Text>
-      </View>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
